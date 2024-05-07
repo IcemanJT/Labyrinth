@@ -1,3 +1,5 @@
+# Jeremi Torój 7.05.2024
+
 class Mase:
 
     def __init__(self, *args):
