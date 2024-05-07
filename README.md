@@ -2,7 +2,7 @@
 ### Jeremi Torój 
 #### 7.05.2024
 
-Python class creating labyrinth
+Python class creating labyrinth using <fill>
 
 ## Functions
 ### Constructors
