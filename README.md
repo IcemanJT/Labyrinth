@@ -6,7 +6,7 @@ Python class creating labyrinth
 
 ## Functions
 ### Constructors
-Maze() # Create a maze object with dicfault size of 10x10 
+Maze() # Create a maze object with default size of 10x10 
 Maze(10) # Creates a square maze object with a size of 10x10  
 Maze(10, 20) # Creates a maze object with a size of 10x20
 
