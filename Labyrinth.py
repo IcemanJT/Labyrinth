@@ -19,9 +19,23 @@ class Mase:
         else:
             raise ValueError("Invalid number of arguments")
 
-    def generate(self):
+    def generate_dfs(self):
         """
-        Generates the maze using the <fill> algorithm
+        Generates the maze using the dfs algorithm
+        :return: maze as a 2D list
+        """
+        pass
+
+    def generate_prim(self):
+        """
+        Generates the maze using the prim algorithm
+        :return: maze as a 2D list
+        """
+        pass
+
+    def generate_kruskal(self):
+        """
+        Generates the maze using the kruskal algorithm
         :return: maze as a 2D list
         """
         pass
@@ -29,4 +43,3 @@ class Mase:
     def display(self):
         pass
 
-    ## test commit
