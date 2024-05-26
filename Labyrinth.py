@@ -206,6 +206,13 @@ class Maze:
         black = (0, 0, 0)
         self.window.fill(black)
 
+    def set_fps(self, fps: int):
+        """
+        Sets the frames per second
+        :param fps: the frames per second
+        """
+        self.fps = fps
+
     def handle_pygame_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -224,6 +231,8 @@ class Maze:
                     self.refresh_walls()
                     self.display_with_pygame()
                     return False
+                if event.key == pygame.K_s:
+                    self.set_fps(0)
                 if event.key == pygame.K_SPACE:
                     pause = True
                     while pause:
