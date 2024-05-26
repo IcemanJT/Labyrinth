@@ -13,9 +13,13 @@ class Maze:
         :param args: width and height of the maze
         """
         if len(args) == 1:
+            if args[0] < 2:
+                raise ValueError("Width and height must be at least 2")
             self.width = args[0]
             self.height = args[0]
         elif len(args) == 2:
+            if args[0] < 2 or args[1] < 2:
+                raise ValueError("Width and height must be at least 2")
             self.width = args[0]
             self.height = args[1]
         elif len(args) == 0:
@@ -60,7 +64,7 @@ class Maze:
             current = stack[-1]
             neighbors = self.get_unvisited_neighbors(current)
 
-            if not self.handle_pygame_events():
+            if not self.handle_pygame_events(False):
                 return
 
             if neighbors:
@@ -94,6 +98,27 @@ class Maze:
             neighbors.append(self.cells[x][y + 1])
 
         return neighbors
+
+    def get_neighbours(self, cell):
+        """
+        Returns all neighbours of a cell
+        :param cell: the cell
+        :return: list of neighbours
+        """
+        neighbours = []
+        x = cell.x
+        y = cell.y
+
+        if x > 0:
+            neighbours.append(self.cells[x - 1][y])
+        if x < self.width - 1:
+            neighbours.append(self.cells[x + 1][y])
+        if y > 0:
+            neighbours.append(self.cells[x][y - 1])
+        if y < self.height - 1:
+            neighbours.append(self.cells[x][y + 1])
+
+        return neighbours
 
     def pick_maze_start(self):
         """
@@ -190,11 +215,17 @@ class Maze:
 
         pygame.display.flip()
 
-    def increase_fps(self):
-        if self.fps < 100:
-            self.fps += 10
+    def increase_fps(self, flag: bool = True):
+        if flag:
+            if self.fps < 100:
+                self.fps += 10
+            else:
+                self.fps = 100
         else:
-            self.fps = 100
+            if self.fps < 100:
+                self.fps += 10
+            else:
+                self.fps = 100
 
     def decrease_fps(self):
         if self.fps > 11:
@@ -213,14 +244,14 @@ class Maze:
         """
         self.fps = fps
 
-    def handle_pygame_events(self):
+    def handle_pygame_events(self, flag: bool):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
-                    self.increase_fps()
+                    self.increase_fps(flag)
                 if event.key == pygame.K_DOWN:
                     self.decrease_fps()
                 if event.key == pygame.K_q:
@@ -244,3 +275,128 @@ class Maze:
                                     pygame.quit()
                                     return False
         return True
+
+    def list_of_walls(self):
+        walls = []
+        for x in range(self.width):
+            for y in range(self.height):
+                if x > 0:
+                    walls.append((self.cells[x][y], self.cells[x - 1][y]))
+                if x < self.width - 1:
+                    walls.append((self.cells[x][y], self.cells[x + 1][y]))
+                if y > 0:
+                    walls.append((self.cells[x][y], self.cells[x][y - 1]))
+                if y < self.height - 1:
+                    walls.append((self.cells[x][y], self.cells[x][y + 1]))
+        return walls
+
+    def generate_maze_prim(self):
+        """
+        Generates the maze using the Prim's algorithm
+        """
+        walls = self.list_of_walls()
+        self.pick_maze_end()
+        self.pick_maze_start()
+        random_x = choice(range(self.width))
+        random_y = choice(range(self.height))
+        current = self.cells[random_x][random_y]
+        current.visited = True
+
+        while walls:
+            wall = choice(walls)
+            cell1, cell2 = wall
+
+            if not self.handle_pygame_events(True):
+                return
+
+            if cell1.visited != cell2.visited:
+                cell1.remove_wall(cell2)
+                cell1.visited = True
+                cell2.visited = True
+
+            if cell2.x > 0:
+                walls.append((cell2, self.cells[cell2.x - 1][cell2.y]))
+            if cell2.x < self.width - 1:
+                walls.append((cell2, self.cells[cell2.x + 1][cell2.y]))
+            if cell2.y > 0:
+                walls.append((cell2, self.cells[cell2.x][cell2.y - 1]))
+            if cell2.y < self.height - 1:
+                walls.append((cell2, self.cells[cell2.x][cell2.y + 1]))
+
+            walls.remove(wall)
+
+            if not self.handle_pygame_events(True):
+                return
+
+            self.display_with_pygame()
+            self.clock.tick(self.fps+100)
+
+    def generate_maze_kruskal(self):
+        """
+        Generates the maze using the Kruskal's algorithm
+        """
+        walls = self.list_of_walls()
+        sets = []
+        self.pick_maze_end()
+        self.pick_maze_start()
+
+        for x in range(self.width):
+            for y in range(self.height):
+                sets.append({self.cells[x][y]})
+
+        while walls:
+
+            wall = choice(walls)
+            cell1, cell2 = wall
+
+            if not self.handle_pygame_events(True):
+                return
+
+            set1 = None
+            set2 = None
+
+            for set_ in sets:
+                if cell1 in set_:
+                    set1 = set_
+                if cell2 in set_:
+                    set2 = set_
+
+            if set1 != set2:
+                cell1.remove_wall(cell2)
+                set1.update(set2)
+                sets.remove(set2)
+
+            walls.remove(wall)
+
+            if not self.handle_pygame_events(True):
+                return
+
+            self.display_with_pygame()
+            self.clock.tick(self.fps+100)
+
+    def generate_maze_aldous_broder(self):
+        """
+        Generates the maze using the Aldous-Broder algorithm
+        """
+        self.pick_maze_start()
+        self.pick_maze_end()
+        current = choice(choice(self.cells))
+        current.visited = True
+        visited_cells = 1
+
+        while visited_cells < self.width * self.height:
+            if not self.handle_pygame_events(False):
+                return
+
+            neighbours = self.get_neighbours(current)
+            next_cell = choice(neighbours)
+
+            if not next_cell.visited:
+                current.remove_wall(next_cell)
+                next_cell.visited = True
+                visited_cells += 1
+
+            current = next_cell
+
+            self.display_with_pygame()
+            self.clock.tick(self.fps)
