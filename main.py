@@ -1,3 +1,5 @@
+# Jeremi Torój 27.05.2024
+
 import pygame
 from Labyrinth import Maze
 import tkinter as tk
