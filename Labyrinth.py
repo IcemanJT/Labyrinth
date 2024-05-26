@@ -2,6 +2,7 @@
 
 from Cell import Cell
 from random import choice
+import pygame
 
 
 class Maze:
@@ -26,6 +27,22 @@ class Maze:
         self.cells = [[Cell(x, y) for y in range(self.height)] for x in range(self.width)]
         self.start_cell = None
         self.end_cell = None
+        pygame.init()
+        self.clock = pygame.time.Clock()
+        self.cell_size = 20  # Default cell size
+        self.window_width = self.width * self.cell_size
+        self.window_height = self.height * self.cell_size
+        self.window = pygame.display.set_mode((self.window_width, self.window_height))
+
+    def set_cell_size(self, cell_size: int):
+        """
+        Sets the size of each cell in pixels
+        :param cell_size: the size of each cell
+        """
+        self.cell_size = cell_size
+        self.window_width = self.width * self.cell_size
+        self.window_height = self.height * self.cell_size
+        self.window = pygame.display.set_mode((self.window_width, self.window_height))
 
     def generate_maze_dfs(self):
         """
@@ -46,6 +63,9 @@ class Maze:
                 current.remove_wall(next_cell)
                 next_cell.visited = True
                 stack.append(next_cell)
+
+                self.display_with_pygame()
+                self.clock.tick(60)
             else:
                 stack.pop()
 
@@ -90,13 +110,11 @@ class Maze:
         """
         maze_str = ""
         for y in range(self.height):
-            # Add the upper walls and corners to the string
             for x in range(self.width):
                 maze_str += '+'
                 maze_str += '-' if self.cells[x][y].wall_up else ' '
             maze_str += '+\n'
 
-            # Add the left walls and the cells to the string
             for x in range(self.width):
                 maze_str += '|' if self.cells[x][y].wall_left else ' '
                 if self.cells[x][y] == self.start_cell:
@@ -107,7 +125,6 @@ class Maze:
                     maze_str += ' '
             maze_str += '|\n' if self.cells[-1][y].wall_right else '\n'
 
-        # Add the lower walls and corners of the last row to the string
         for x in range(self.width):
             maze_str += '+'
             maze_str += '-' if self.cells[x][-1].wall_down else ' '
@@ -115,4 +132,55 @@ class Maze:
 
         return maze_str
 
+    def refresh_walls(self):
+        self.cells = [[Cell(x, y) for y in range(self.height)] for x in range(self.width)]
 
+    def clear_window(self):
+        black = (0, 0, 0)  # RGB for black
+        self.window.fill(black)
+        pygame.display.flip()
+
+    def display_with_pygame(self):
+        """
+        Displays the current state of the maze using Pygame
+        """
+
+        white = (255, 255, 255)
+        purple = (128, 0, 128)
+        red = (255, 0, 0)
+        black = (0, 0, 0)
+
+        for y in range(self.height):
+            for x in range(self.width):
+                cell = self.cells[x][y]
+
+                if cell == self.start_cell:
+                    pygame.draw.rect(self.window, purple, (x * self.cell_size, y * self.cell_size,
+                                                           self.cell_size, self.cell_size))
+                if cell == self.end_cell:
+                    pygame.draw.rect(self.window, red, (x * self.cell_size, y * self.cell_size,
+                                                        self.cell_size, self.cell_size))
+
+                top_left = (x * self.cell_size, y * self.cell_size)
+                top_right = ((x + 1) * self.cell_size, y * self.cell_size)
+                bottom_left = (x * self.cell_size, (y + 1) * self.cell_size)
+                bottom_right = ((x + 1) * self.cell_size, (y + 1) * self.cell_size)
+
+                # Draw over the old walls with the background color
+                pygame.draw.line(self.window, black, top_left, top_right)
+                pygame.draw.line(self.window, black, top_left, bottom_left)
+                if x == self.width - 1:
+                    pygame.draw.line(self.window, black, top_right, bottom_right)
+                if y == self.height - 1:
+                    pygame.draw.line(self.window, black, bottom_left, bottom_right)
+
+                if cell.wall_up:
+                    pygame.draw.line(self.window, white, top_left, top_right)
+                if cell.wall_left:
+                    pygame.draw.line(self.window, white, top_left, bottom_left)
+                if x == self.width - 1 and cell.wall_right:
+                    pygame.draw.line(self.window, white, top_right, bottom_right)
+                if y == self.height - 1 and cell.wall_down:
+                    pygame.draw.line(self.window, white, bottom_left, bottom_right)
+
+        pygame.display.flip()
