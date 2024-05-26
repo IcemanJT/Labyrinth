@@ -33,6 +33,8 @@ class Maze:
         self.window_width = self.width * self.cell_size
         self.window_height = self.height * self.cell_size
         self.window = pygame.display.set_mode((self.window_width, self.window_height))
+        pygame.display.set_caption("Maze")
+        self.fps = 60  # Default frames per second
 
     def set_cell_size(self, cell_size: int):
         """
@@ -58,6 +60,9 @@ class Maze:
             current = stack[-1]
             neighbors = self.get_unvisited_neighbors(current)
 
+            if not self.handle_pygame_events():
+                return
+
             if neighbors:
                 next_cell = choice(neighbors)
                 current.remove_wall(next_cell)
@@ -65,7 +70,7 @@ class Maze:
                 stack.append(next_cell)
 
                 self.display_with_pygame()
-                self.clock.tick(60)
+                self.clock.tick(self.fps)
             else:
                 stack.pop()
 
@@ -184,3 +189,49 @@ class Maze:
                     pygame.draw.line(self.window, white, bottom_left, bottom_right)
 
         pygame.display.flip()
+
+    def increase_fps(self):
+        if self.fps < 100:
+            self.fps += 10
+        else:
+            self.fps = 100
+
+    def decrease_fps(self):
+        if self.fps > 11:
+            self.fps -= 10
+        else:
+            self.fps = 1
+
+    def fill_black(self):
+        black = (0, 0, 0)
+        self.window.fill(black)
+
+    def handle_pygame_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    self.increase_fps()
+                if event.key == pygame.K_DOWN:
+                    self.decrease_fps()
+                if event.key == pygame.K_q:
+                    pygame.quit()
+                    return False
+                if event.key == pygame.K_r:
+                    self.fill_black()
+                    self.refresh_walls()
+                    self.display_with_pygame()
+                    return False
+                if event.key == pygame.K_SPACE:
+                    pause = True
+                    while pause:
+                        for ev in pygame.event.get():
+                            if ev.type == pygame.KEYDOWN:
+                                if ev.key == pygame.K_SPACE:
+                                    pause = False
+                                if ev.key == pygame.K_q:
+                                    pygame.quit()
+                                    return False
+        return True
