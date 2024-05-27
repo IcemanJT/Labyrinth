@@ -373,30 +373,3 @@ class Maze:
 
             self.display_with_pygame()
             self.clock.tick(self.fps+100)
-
-    def generate_maze_aldous_broder(self):
-        """
-        Generates the maze using the Aldous-Broder algorithm
-        """
-        self.pick_maze_start()
-        self.pick_maze_end()
-        current = choice(choice(self.cells))
-        current.visited = True
-        visited_cells = 1
-
-        while visited_cells < self.width * self.height:
-            if not self.handle_pygame_events(False):
-                return
-
-            neighbours = self.get_neighbours(current)
-            next_cell = choice(neighbours)
-
-            if not next_cell.visited:
-                current.remove_wall(next_cell)
-                next_cell.visited = True
-                visited_cells += 1
-
-            current = next_cell
-
-            self.display_with_pygame()
-            self.clock.tick(self.fps)

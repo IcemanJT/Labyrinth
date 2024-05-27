@@ -66,9 +66,6 @@ while running:
             if event.key == pygame.K_k:
                 refresh_maze(maze)
                 maze.generate_maze_kruskal()
-            if event.key == pygame.K_a:
-                refresh_maze(maze)
-                maze.generate_maze_aldous_broder()
             if event.key == pygame.K_q:
                 pygame.quit()
             if event.key == pygame.K_r:
